@@ -11,6 +11,9 @@ class KalahaGame:
         print("    ", *self.board[:6], "|", "P1: ", self.board[6])
         print("\n")
 
+    def get_board(self):
+        return self.board
+
     def make_move(self, pit_index):
         stones = self.board[pit_index]
         if stones == 0 or pit_index < 0 or pit_index > 12 or (self.current_player == 1 and pit_index > 5) or (self.current_player == 2 and pit_index < 7):
