@@ -14,11 +14,14 @@ class KalahaGame:
 
     def get_board(self):
         return self.board # Return the current board states
+    
+    def get_current_player(self):
+        return self.current_player
 
     def play_turn(self, pit_index):
         if self.is_valid_move(pit_index):
-            extra_turn = self.make_move(self.board, pit_index)
-            if self.is_game_over():
+            extra_turn = self.make_move(self.board, pit_index)[1]
+            if self.is_game_over(self.board):
                 self.end_game()
                 return True
             if not extra_turn:  # Only switch player if no extra turn granted
@@ -71,9 +74,10 @@ class KalahaGame:
 
     def switch_player(self):
         self.current_player = 2 if self.current_player == 1 else 1
+        print("player:", self.current_player)
 
-    def is_game_over(self):
-        return all(stone == 0 for stone in self.board[:6]) or all(stone == 0 for stone in self.board[7:13])
+    def is_game_over(self, board):
+        return all(stone == 0 for stone in board[:6]) or all(stone == 0 for stone in board[7:13])
 
     def end_game(self):
         if all(stone == 0 for stone in self.board[:6]):
@@ -86,11 +90,11 @@ class KalahaGame:
                 self.board[i] = 0
 
         print("Game over. Player 1: {} | Player 2: {}".format(self.board[6], self.board[13]))
-        winner = self.get_winner()
+        winner = self.get_winner(self.board)
         print(f"Winner: Player {winner}")
         self.print_board()
 
-    def get_winner(self):
+    def get_winner(self, board):
         if self.board[6] > self.board[13]:
             return 1
         elif self.board[13] > self.board[6]:
@@ -99,7 +103,7 @@ class KalahaGame:
             return "Tie"
 
     def play(self):
-        while not self.is_game_over():
+        while not self.is_game_over(self.board):
             self.print_board()
             if self.current_player == 1:
                 print("Player 1's turn. Choose a pit (0-5): ", end="")

@@ -5,48 +5,57 @@ class KalahaAI:
         self.game = game
     
     def current_state(self):
-        """
-        current_state[0] = board
-        current_state[1] = current player
-        """
-        return self.game.get_board(), self.game.current_player()
+        return self.game.get_board(), self.game.get_current_player()
+    
+    def player(self, state):
+        return state[1]
+    
+    def board(self, state):
+        board = state
+        print("We are getting the board", board)
+        return state[0]
 
-    # def choose_move(self):
-    #     board = self.game.get_board()
-    #     valid_moves = self.actions(board)
-    #     return random.choice(valid_moves) if valid_moves else -1
-
+    #Given a state, returns an integer that corresponds to the pit that makes the best move 
     def choose_move(self):
         print("AI is thinking...")
-        board = self.game.get_board()
-        valid_moves = self.actions(board)
-        best_move = valid_moves[0]
-        best_value = float('-inf')
-        for move in valid_moves:
-            print("I am thinking... hmm")
-            result = self.result(board, move)
-            value = self.minimax(result)
-            if value > best_value:
-                best_value = value
-                best_move = move
-        print("Hah! I choose pit", best_move)
+        state = self.current_state()
+
+        best_move = None
+        best_score = float("-inf") if self.player(state) == 2 else float("inf")
+
+        for action in self.actions(state):
+            result_state = self.result(state, action)
+            print("this is result state", result_state)
+            score = self.minimax(result_state)
+            if (self.player(state) == 2 and score > best_score) or (self.player(state) == 1 and score < best_score):
+                best_score = score
+                best_move = action
+
         return best_move
 
-    def actions(self, board):
+    #returns a list of integers corresponding to applicable move in the current state
+    def actions(self, state):
         # Since we assume AI is always player 2, we check pits 7-12
+        board = self.board(state)
+        print("this is the board", board)
         return [i for i in range(7, 13) if board[i] > 0]
     
-    def result(self, board, action):
-        new_board = board.copy()
+
+    #returns the resulting state given a state and an action
+    def result(self, state, action):
+        new_board = self.board(state).copy()
         new_board, extra_turn = self.game.make_move(new_board, action)
         if extra_turn:
-            return new_board, 2
+            return new_board, self.player(state)
         else:
-            return new_board, 1
+            player = 1 if self.player(state) == 2 else 2
+            return new_board, player
     
-    def terminal_test(self, board):
-        return self.game.is_game_over(board)
+    #returns a bool determning whether the game is over given a state
+    def terminal_test(self, state):
+        return self.game.is_game_over(self.board(state))
     
+    #given a terminal state returns the utility of the state
     def utility(self, state):
         return self.translate_winner(self.game.get_winner(state[0]))
 
@@ -57,12 +66,19 @@ class KalahaAI:
             return 1 
         else:
             return 0
-        
-    def minimax(self, state):
+
+    def minimax(self, state, max_depth):
+        if max_depth == 0:
+            return 
+        print("minimax is really thinking hard")
         if self.terminal_test(state):
             return self.utility(state)
-        elif state[1] == 2:
-            return max(self.minimax(self.result(state[0], action) for action in self.actions(state[0])))
+        elif self.player(state) == 2:
+            return max([self.minimax(self.result(state, action)) for action in self.actions(state)])
+        elif self.player(state) == 1:
+            return min([self.minimax(self.result(state, action)) for action in self.actions(state)])
         else:
-            return min(self.minimax(self.result(state[0], action) for action in self.actions(state[0])))
+            print("ERROR IN MINIMAX")
+
+
         
