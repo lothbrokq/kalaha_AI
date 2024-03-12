@@ -2,18 +2,22 @@ class KalahaGame:
     def __init__(self):
         # Initialize board: 6 stones in each pit, 0 in Kalahas
         self.board = [6] * 6 + [0] + [6] * 6 + [0]  # Pits 0-5: Player 1, 7-12: Player 2, 6 & 13: Kalahas
-        self.current_player = 2  # Player 1 starts
-
+        # initial state = [6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 0]
+        self.current_player = 1  # Player 1 starts
+    
     def print_board(self):
         # Print the board state in a user-friendly way
-        print("P2: ", self.board[13], "|", *self.board[12:6:-1])
+        print("P2:  ", self.board[13], " | ", *self.board[12:6:-1])
         print("    ", end="")
-        print("    ", *self.board[:6], "|", "P1: ", self.board[6])
+        print("       ", *self.board[:6], " | ", "P1:  ", self.board[6])
         print("\n")
+
+    def get_board(self):
+        return self.board # Return the current board states
 
     def play_turn(self, pit_index):
         if self.is_valid_move(pit_index):
-            extra_turn = self.make_move(pit_index)
+            extra_turn = self.make_move(self.board, pit_index)
             if self.is_game_over():
                 self.end_game()
                 return True
@@ -30,18 +34,18 @@ class KalahaGame:
             return True
         return False
 
-    def make_move(self, pit_index):
-        stones = self.board[pit_index]
-        self.board[pit_index] = 0  # Remove all stones from the pit
+    def make_move(self, board, pit_index):
+        stones = board[pit_index]
+        board[pit_index] = 0  # Remove all stones from the pit
         last_index = pit_index
         while stones > 0:
             last_index = (last_index + 1) % 14
             if (self.current_player == 1 and last_index == 13) or (self.current_player == 2 and last_index == 6):
                 continue
-            self.board[last_index] += 1
+            board[last_index] += 1
             stones -= 1
 
-        return self.handle_extra_turns_and_captures(last_index)
+        return board, self.handle_extra_turns_and_captures(last_index)
 
     def handle_extra_turns_and_captures(self, last_index):
         # Check if last stone landed in the player's Kalaha for an extra turn
@@ -82,9 +86,17 @@ class KalahaGame:
                 self.board[i] = 0
 
         print("Game over. Player 1: {} | Player 2: {}".format(self.board[6], self.board[13]))
-        winner = "1" if self.board[6] > self.board[13] else "2" if self.board[6] < self.board[13] else "None, it's a tie!"
+        winner = self.get_winner()
         print(f"Winner: Player {winner}")
         self.print_board()
+
+    def get_winner(self):
+        if self.board[6] > self.board[13]:
+            return 1
+        elif self.board[13] > self.board[6]:
+            return 2
+        else:
+            return "Tie"
 
     def play(self):
         while not self.is_game_over():
