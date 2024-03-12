@@ -1,68 +1,69 @@
-import random
+import copy
 
 class KalahaAI:
     def __init__(self, game):
         self.game = game
-    
-    def current_state(self):
-        """
-        current_state[0] = board
-        current_state[1] = current player
-        """
-        return self.game.get_board(), self.game.current_player()
 
-    # def choose_move(self):
-    #     board = self.game.get_board()
-    #     valid_moves = self.actions(board)
-    #     return random.choice(valid_moves) if valid_moves else -1
-
-    def choose_move(self):
-        print("AI is thinking...")
-        board = self.game.get_board()
-        valid_moves = self.actions(board)
-        best_move = valid_moves[0]
-        best_value = float('-inf')
-        for move in valid_moves:
-            print("I am thinking... hmm")
-            result = self.result(board, move)
-            value = self.minimax(result)
-            if value > best_value:
-                best_value = value
-                best_move = move
-        print("Hah! I choose pit", best_move)
+    def choose_move(self, depth=10):  # Added depth parameter with default value
+        state = self.game.get_state()
+        best_score = float('-inf')
+        best_move = None
+        for action in self.actions(state):
+            print(f"AI is considering move from pit {action}")
+            simulated_state = self.result(state, action)
+            score = self.min_value(simulated_state, depth - 1)  # Pass depth - 1 to the next level
+            print(f"AI evaluated move {action} with score {score}")
+            if score > best_score:
+                best_score = score
+                best_move = action
+        print(f"AI chooses pit {best_move} with a score of {best_score}")
         return best_move
 
-    def actions(self, board):
-        # Since we assume AI is always player 2, we check pits 7-12
-        return [i for i in range(7, 13) if board[i] > 0]
-    
-    def result(self, board, action):
-        new_board = board.copy()
-        new_board, extra_turn = self.game.make_move(new_board, action)
-        if extra_turn:
-            return new_board, 2
-        else:
-            return new_board, 1
-    
-    def terminal_test(self, board):
-        return self.game.is_game_over(board)
-    
-    def utility(self, state):
-        return self.translate_winner(self.game.get_winner(state[0]))
+    def actions(self, state):
+        # Returns all legal moves from the given state
+        valid_moves = []
+        start, end = (7, 13) if self.game.get_current_player() == 2 else (0, 6)
+        for pit_index in range(start, end):
+            if state[pit_index] > 0:  # Ensure there are stones to play
+                valid_moves.append(pit_index)
+        return valid_moves
 
-    def translate_winner(self, player):
-        if player == 1:
-            return -1
-        elif player == 2:
-            return 1 
-        else:
-            return 0
-        
-    def minimax(self, state):
-        if self.terminal_test(state):
+    def result(self, state, action):
+        # Simulates a move and returns the resulting state
+        new_state, _ = self.game.make_move(copy.deepcopy(state), action)
+        return new_state
+
+    def terminal_test(self, state):
+        # Checks if the game is over for the given state
+        return self.game.is_game_over_state(state)
+
+    def utility(self, state):
+        # Assuming AI is player 2
+        if self.game.is_game_over_state(state):
+            winner = self.game.get_winner_based_on_state(state)  # Adjust based on your implementation
+            if winner == 2:
+                #print("AI sees a winning move")
+                return 1  # AI win
+            elif winner == 1:
+                #print("AI sees a losing move")
+                return -1  # AI loss
+            else:
+                #print("AI sees a draw")
+                return 0  # Draw
+        return 0  # Non-terminal state
+
+    def min_value(self, state, depth):
+        if self.terminal_test(state) or depth == 0:  # Check for terminal state or depth limit
             return self.utility(state)
-        elif state[1] == 2:
-            return max(self.minimax(self.result(state[0], action) for action in self.actions(state[0])))
-        else:
-            return min(self.minimax(self.result(state[0], action) for action in self.actions(state[0])))
-        
+        v = float('inf')
+        for a in self.actions(state):
+            v = min(v, self.max_value(self.result(state, a), depth - 1))  # Decrease depth by 1
+        return v
+
+    def max_value(self, state, depth):
+        if self.terminal_test(state) or depth == 0:  # Check for terminal state or depth limit
+            return self.utility(state)
+        v = float('-inf')
+        for a in self.actions(state):
+            v = max(v, self.min_value(self.result(state, a), depth - 1))  # Decrease depth by 1
+        return v
