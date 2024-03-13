@@ -7,13 +7,13 @@ class KalahaGame:
         # initial state = [6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 0]
         self.current_player = 1  # Player 1 starts
     
-    def get_winner_based_on_state(self, state):
+    def get_winner_based_on_state(self, board):
         # This method assumes that the game is over. It calculates which player has more stones in their Kalaha.
         # Remember, this doesn't declare the winner based on game rules directly (e.g., emptying one side of the board)
         # but rather who has more stones in their Mancala/Kalaha after the game ends.
-        if state[6] > state[13]:  # If Player 1 has more stones in their Kalaha
+        if board[6] > board[13]:  # If Player 1 has more stones in their Kalaha
             return 1
-        elif state[13] > state[6]:  # If Player 2 has more stones in their Kalaha
+        elif board[13] > board[6]:  # If Player 2 has more stones in their Kalaha
             return 2
         else:
             return "Tie"  # A tie if both have the same number of stones
@@ -25,7 +25,7 @@ class KalahaGame:
         print("       ", *self.board[:6], " | ", "P1:  ", self.board[6])
         print("\n")
 
-    def get_state(self):
+    def get_board(self):
         return copy.deepcopy(self.board) # Return the current board states
 
     def get_current_player(self):
@@ -50,32 +50,32 @@ class KalahaGame:
             return True
         return False
 
-    def make_move(self, state, pit_index):
-        stones = state[pit_index]
-        state[pit_index] = 0
+    def make_move(self, board, pit_index):
+        stones = board[pit_index]
+        board[pit_index] = 0
         last_index = pit_index
         while stones > 0:
             last_index = (last_index + 1) % 14
             if (self.current_player == 1 and last_index == 13) or (self.current_player == 2 and last_index == 6):
                 continue
-            state[last_index] += 1
+            board[last_index] += 1
             stones -= 1
 
-        return state, self.handle_extra_turns_and_captures(state, last_index)
+        return board, self.handle_extra_turns_and_captures(board, last_index)
 
-    def handle_extra_turns_and_captures(self, state, last_index):
+    def handle_extra_turns_and_captures(self, board, last_index):
         extra_turn = False
         if (self.current_player == 1 and last_index == 6) or (self.current_player == 2 and last_index == 13):
             extra_turn = True
 
-        if 0 <= last_index <= 5 and self.current_player == 1 and state[last_index] == 1 or \
-           7 <= last_index <= 12 and self.current_player == 2 and state[last_index] == 1:
+        if 0 <= last_index <= 5 and self.current_player == 1 and board[last_index] == 1 or \
+           7 <= last_index <= 12 and self.current_player == 2 and board[last_index] == 1:
             opposite_index = 12 - last_index
-            if state[opposite_index] > 0:
+            if board[opposite_index] > 0:
                 capture_pit = 6 if self.current_player == 1 else 13
-                state[capture_pit] += state[opposite_index] + 1
-                state[last_index] = 0
-                state[opposite_index] = 0
+                board[capture_pit] += board[opposite_index] + 1
+                board[last_index] = 0
+                board[opposite_index] = 0
 
         return extra_turn
 
@@ -86,8 +86,8 @@ class KalahaGame:
     def is_game_over(self):
         return all(stone == 0 for stone in self.board[:6]) or all(stone == 0 for stone in self.board[7:13])
 
-    def is_game_over_state(self, state):
-        return all(stone == 0 for stone in state[:6]) or all(stone == 0 for stone in state[7:13])
+    def is_game_over_state(self, board):
+        return all(stone == 0 for stone in board[:6]) or all(stone == 0 for stone in board[7:13])
 
     def end_game(self):
         if all(stone == 0 for stone in self.board[:6]):
