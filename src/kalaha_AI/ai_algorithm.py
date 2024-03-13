@@ -7,14 +7,14 @@ class KalahaAI:
     def get_state(self):
         return self.game.get_board(), self.game.get_current_player()
 
-    def choose_move(self, depth=10):  # Added depth parameter with default value
+    def choose_move(self, depth=12):  # Added depth parameter with default value
         state = self.get_state()
         best_score = float('-inf')
         best_move = None
         for action in self.actions(state):
             #print(f"AI is considering move from pit {action}")
             simulated_state = self.result(state, action)
-            score = self.minimax_value(simulated_state, depth - 1)  # Pass depth - 1 to the next level
+            score = self.minimax_value(simulated_state, depth - 1, float('-inf'), float('inf'))  # Pass depth - 1 to the next level
             print(f"AI evaluated move {action} with score {score}")
             if score > best_score:
                 best_score = score
@@ -65,23 +65,44 @@ class KalahaAI:
                 return 0  # Draw
         return 0  # Non-terminal state
 
-    def minimax_value(self, state, depth):
+    # def minimax_value(self, state, depth):
+    #     if self.terminal_test(state) or depth == 0:
+    #         return self.evaluate(state)
+
+    #     if state[1] == 2: # If player is AI then maximising player
+    #         best_value = float('-inf')
+    #         for action in self.actions(state):
+    #             value = self.minimax_value(self.result(state, action), depth - 1)
+    #             best_value = max(best_value, value)
+    #     else:
+    #         best_value = float('inf')
+    #         for action in self.actions(state):
+    #             value = self.minimax_value(self.result(state, action), depth - 1)
+    #             best_value = min(best_value, value)
+
+    #     return best_value
+    
+    def minimax_value(self, state, depth, alpha=float('-inf'), beta=float('inf')):
         if self.terminal_test(state) or depth == 0:
             return self.evaluate(state)
 
-        if state[1] == 2: # If player is AI then maximising player
-            best_value = float('-inf')
+        if state[1] == 2:  # Maximizing for AI
+            value = float('-inf')
             for action in self.actions(state):
-                value = self.minimax_value(self.result(state, action), depth - 1)
-                best_value = max(best_value, value)
-        else:
-            best_value = float('inf')
+                value = max(value, self.minimax_value(self.result(state, action), depth - 1, alpha, beta))
+                if value >= beta:  # Prune the branch
+                    return value
+                alpha = max(alpha, value)
+        else:  # Minimizing for opponent
+            value = float('inf')
             for action in self.actions(state):
-                value = self.minimax_value(self.result(state, action), depth - 1)
-                best_value = min(best_value, value)
+                value = min(value, self.minimax_value(self.result(state, action), depth - 1, alpha, beta))
+                if value <= alpha:  # Prune the branch
+                    return value
+                beta = min(beta, value)
 
-        return best_value
-    
+        return value
+
 
     
     def evaluate(self, state):
@@ -101,10 +122,10 @@ class KalahaAI:
         player_turn -= 1  # Adjusting player_turn to be 0-indexed for consistency
 
         # Weight factors for evaluation
-        kalaha_weight = 2.5
-        pit_weight = 2
-        extra_turn_weight = 6
-        capture_weight = 1.5
+        kalaha_weight = 5 #gpt siger 2.5 - 5
+        pit_weight = 2 #gpt siger 1-2
+        extra_turn_weight = 10 #gpt siger 5-10
+        capture_weight = 3 #gpt siger 1-3
 
         # Initialize scores
         player_kalaha_index = 6 if player_turn == 0 else 13
@@ -137,7 +158,7 @@ class KalahaAI:
         # Adding opponent capture logic
         for pit in opponent_side:
             seeds = board[pit]
-            magic_number = 36
+            magic_number = 50 # Adjust this value based on AI behaviour
             if board[6] + board[13] > magic_number:
                 opponent_score += board[pit] * pit_weight
             # Determine the pit where the last stone would land for the opponent

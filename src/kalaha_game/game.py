@@ -28,11 +28,18 @@ class KalahaGame:
         else:
             return "Tie"  # A tie if both have the same number of stones
     
+    # def print_board(self):
+    #     # Print the board state in a user-friendly way
+    #     print("P2:  ", self.board[13], " | ", *self.board[12:6:-1])
+    #     print("    ", end="")
+    #     print("       ", *self.board[:6], " | ", "P1:  ", self.board[6])
+    #     print("\n")
+
     def print_board(self):
         # Print the board state in a user-friendly way
-        print("P2:  ", self.board[13], " | ", *self.board[12:6:-1])
+        print("P2:  ", self.board[13], "  |  ", self.board[12], " ", self.board[11], " ", self.board[10], " ", self.board[9], " ", self.board[8], " ", self.board[7])
         print("    ", end="")
-        print("       ", *self.board[:6], " | ", "P1:  ", self.board[6])
+        print("         ", self.board[0], " ", self.board[1], " ", self.board[2], " ", self.board[3], " ", self.board[4], " ", self.board[5], "  |  ", "P1:  ", self.board[6])
         print("\n")
 
     def get_board(self):
