@@ -5,6 +5,13 @@ class KalahaGame:
         # Initialize board: 6 stones in each pit, 0 in Kalahas
         self.board = [6] * 6 + [0] + [6] * 6 + [0]  # Pits 0-5: Player 1, 7-12: Player 2, 6 & 13: Kalahas
         # initial state = [6, 6, 6, 6, 6, 6, 0, 6, 6, 6, 6, 6, 6, 0]
+        
+        #self.board = [1, 1, 12, 1, 1, 5, 0, # Capture example
+        #              0, 0, 1, 0, 5, 4, 0]
+        
+        #self.board = [1, 1, 1, 1, 1, 5, 0, # Extra turn example
+        #              1, 0, 1, 0, 2, 1, 0]
+        
         self.current_player = 1  # Player 1 starts
     
     def get_winner_based_on_state(self, board):
