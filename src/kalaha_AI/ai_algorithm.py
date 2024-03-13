@@ -7,7 +7,7 @@ class KalahaAI:
     def get_state(self):
         return self.game.get_board(), self.game.get_current_player()
 
-    def choose_move(self, depth=12):  # Added depth parameter with default value
+    def choose_move(self, depth=10):  # Added depth parameter with default value
         state = self.get_state()
         best_score = float('-inf')
         best_move = None
@@ -47,12 +47,12 @@ class KalahaAI:
     def terminal_test(self, state):
         # Checks if the game is over for the given state
         board  = state[0]
-        return self.game.is_game_over_state(board)
+        return self.game.is_game_over(board)
 
     def utility(self, state):
         board = state[0]
         # Assuming AI is player 2
-        if self.game.is_game_over_state(board):
+        if self.game.is_game_over(board):
             winner = self.game.get_winner_based_on_state(board)  # Adjust based on your implementation
             if winner == 2:
                 #print("AI sees a winning move")
@@ -83,56 +83,83 @@ class KalahaAI:
         return best_value
     
 
+    
     def evaluate(self, state):
-        board = state[0]
-        player = state[1] - 1
+        def calculate_final_pit_index(start_pit, seeds, player_turn):
+            final_pit = start_pit
+            while seeds > 0:
+                final_pit += 1
+                # Skip opponent's Kalaha
+                if (player_turn == 0 and final_pit == 13) or (player_turn == 1 and final_pit == 6):
+                    continue
+                if final_pit > 13:
+                    final_pit = 0  # Loop back to the beginning of the board
+                seeds -= 1
+            return final_pit
+        
+        board, player_turn = state
+        player_turn -= 1  # Adjusting player_turn to be 0-indexed for consistency
 
-        # Weight factors
-        store_weight = 1.5
-        seed_weight = 1
-        mobility_weight = 1.5
-        capture_weight = 3
-        frontier_weight = 0.5
+        # Weight factors for evaluation
+        kalaha_weight = 2.5
+        pit_weight = 2
+        extra_turn_weight = 6
+        capture_weight = 1.5
 
-        # Initialize scores for both players
+        # Initialize scores
+        player_kalaha_index = 6 if player_turn == 0 else 13
+        opponent_kalaha_index = 13 if player_turn == 0 else 6
         player_score = 0
         opponent_score = 0
 
-        # Calculate scores for each player
-        for pit in range(len(board)):
-            if board[pit] > 0:
-                # Player's pit
-                if pit // 7 == player:
-                    player_score += board[pit]
-                    # Additional weight for seeds in the player's store
-                    if pit == 6 * player:
-                        player_score += store_weight * board[pit]
-                # Opponent's pit
-                else:
-                    opponent_score += board[pit]
+        # Calculate store scores with weighted value
+        player_score += board[player_kalaha_index] * kalaha_weight
+        opponent_score += board[opponent_kalaha_index] * kalaha_weight
 
-        # Calculate mobility
-        player_mobility = sum(1 for pit in range(player * 7, player * 7 + 6) if board[pit] > 0)
-        opponent_mobility = sum(1 for pit in range(1 - player * 7, 7 - player * 7) if board[pit] > 0)
+        # Evaluate seeds on the player's and opponent's sides (excluding stores)
+        player_side = range(0, 6) if player_turn == 0 else range(7, 13)
+        opponent_side = range(7, 13) if player_turn == 0 else range(0, 6)
 
-        # Calculate captures
-        player_captures = sum(board[pit] for pit in range(player * 7, player * 7 + 6) if (pit + board[pit]) % 14 == 6)
-        opponent_captures = sum(board[pit] for pit in range(1 - player * 7, 7 - player * 7) if (pit + board[pit]) % 14 == 0)
+        for pit in player_side:
+            seeds = board[pit]
+            magic_number = 36
+            if board[6] + board[13] > magic_number:
+                player_score += board[pit] * pit_weight
+            # Capture logic
+            # Determine the pit where the last stone would land
+            final_pit = calculate_final_pit_index(pit, seeds, player_turn)
+            can_capture = final_pit in player_side and board[final_pit] == 0 and board[12 - final_pit] > 0
+            # Check if final pit is on player's side and would result in a capture
+            if can_capture:
+                # Add score for potential capture
+                player_score += (board[12 - final_pit] + 1) * capture_weight
 
-        # Calculate frontier seeds
-        player_frontier = sum(1 for pit in range(player * 7, player * 7 + 6) if board[pit] == 1)
-        opponent_frontier = sum(1 for pit in range(1 - player * 7, 7 - player * 7) if board[pit] == 1)
+        # Adding opponent capture logic
+        for pit in opponent_side:
+            seeds = board[pit]
+            magic_number = 36
+            if board[6] + board[13] > magic_number:
+                opponent_score += board[pit] * pit_weight
+            # Determine the pit where the last stone would land for the opponent
+            final_pit_opponent = (pit + board[pit]) % 14
+            can_capture = final_pit_opponent in opponent_side and board[final_pit_opponent] == 0 and board[12 - final_pit_opponent] > 0
+            # Check if final pit is on opponent's side and would result in a capture
+            if can_capture:
+                # Subtract score for potential opponent capture from player's perspective
+                opponent_score += (board[12 - final_pit_opponent] + 1) * capture_weight
 
-        # Calculate final evaluation scores
-        player_score += seed_weight * player_score + mobility_weight * (player_mobility - opponent_mobility) + capture_weight * (player_captures - opponent_captures) + frontier_weight * (player_frontier - opponent_frontier)
-        opponent_score += seed_weight * opponent_score + mobility_weight * (opponent_mobility - player_mobility) + capture_weight * (opponent_captures - player_captures) + frontier_weight * (opponent_frontier - player_frontier)
+        # Extra turn logic
+        for pit in player_side:
+            seeds = board[pit]
+            if seeds == (player_kalaha_index - pit) % 14:  # Exact count to land in the store
+                player_score += extra_turn_weight  # Extra turn possibility
 
-        # Return the difference in scores (positive if player is winning, negative if opponent is winning)
+        for pit in opponent_side:
+            seeds = board[pit]
+            if seeds == (opponent_kalaha_index - pit) % 14:
+                opponent_score += extra_turn_weight
+
+        # The final score is the difference between the player's and opponent's scores
+        # Positive values favor the player, negative values favor the opponent.
         return player_score - opponent_score
 
-
-    # def player_utility(self):
-    #     pass
-
-    # def alpha_beta_cutoff(self):
-    #     pass
