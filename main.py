@@ -1,6 +1,13 @@
 from src.kalaha_game.game import KalahaGame
 from src.kalaha_AI.ai_algorithm import KalahaAI
 
+default_config = {
+    'kalaha_weight': 5,
+    'pit_weight': 2,
+    'extra_turn_weight': 10,
+    'capture_weight': 3,
+}
+
 class HumanPlayer:
     def __init__(self, player_number):
         self.player_number = player_number
@@ -50,10 +57,10 @@ def select_game_mode(game):
         return HumanPlayer(1), HumanPlayer(2)
     elif mode == '2':
         # Pass the game instance and player number to KalahaAI
-        return HumanPlayer(1), AIPlayer(KalahaAI(game, 2), 2)
+        return HumanPlayer(1), AIPlayer(KalahaAI(game, 2, default_config), 2)
     elif mode == '3':
         # Pass the game instance and player number to KalahaAI for both AI players
-        return AIPlayer(KalahaAI(game, 1), 1), AIPlayer(KalahaAI(game, 2), 2)
+        return AIPlayer(KalahaAI(game, 1, default_config), 1), AIPlayer(KalahaAI(game, 2, default_config), 2)
     else:
         print("Invalid selection, defaulting to Player vs Player.")
         return HumanPlayer(1), HumanPlayer(2)

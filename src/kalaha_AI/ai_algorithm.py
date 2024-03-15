@@ -1,9 +1,11 @@
 import copy
 
 class KalahaAI:
-    def __init__(self, game, player_number):
+    def __init__(self, game, player_number, config):
         self.game = game
-        self.player_number = player_number  # Player number to make AI adaptable for both players
+        self.player_number = player_number
+        self.config = config
+        print(self.config)
 
     def get_state(self):
         # Fetch the current game state and the AI's player number
@@ -16,6 +18,7 @@ class KalahaAI:
         for action in self.actions(state):
             simulated_state = self.result(state, action)
             score = self.minimax_value(simulated_state, depth - 1, float('-inf'), float('inf'))
+            print(f"Action: {action} | Score: {score}")
             if score > best_score:
                 best_score = score
                 best_move = action
@@ -77,6 +80,7 @@ class KalahaAI:
                 beta = min(beta, value)
                 if beta <= alpha:
                     break  # Alpha cut-off
+
             return value
 
     def evaluate(self, state):
@@ -91,54 +95,55 @@ class KalahaAI:
         opponent_score = 0
 
         # Apply weight factors
-        kalaha_weight = 5
-        pit_weight = 2
-        extra_turn_weight = 10
-        capture_weight = 3
+        kalaha_weight = self.config['kalaha_weight']
+        pit_weight = self.config['pit_weight']
+        extra_turn_weight = self.config['extra_turn_weight']
+        capture_weight = self.config['capture_weight']
 
         # Kalaha scores
         player_score += board[player_kalaha_index] * kalaha_weight
-        opponent_score += board[opponent_kalaha_index] * kalaha_weight
+        opponent_score -= board[opponent_kalaha_index] * kalaha_weight  # Reduce opponent score to reflect on player's score
 
         # Define player and opponent sides of the board
-        if player_turn == 1:
-            player_side = range(0, 6)
-            opponent_side = range(7, 13)
-        else:
-            player_side = range(7, 13)
-            opponent_side = range(0, 6)
+        player_side = range(0, 6) if player_turn == 1 else range(7, 13)
+        opponent_side = range(7, 13) if player_turn == 1 else range(0, 6)
 
+        # Evaluate seeds on player's and opponent's sides
         for pit in player_side:
             seeds = board[pit]
-            player_score += seeds * pit_weight  # Evaluate seeds in pits
+            player_score += seeds * pit_weight
 
-            final_pit = self.calculate_final_pit_index(pit, seeds, player_turn)
-            can_capture = final_pit in player_side and board[final_pit] == 1 and board[12 - final_pit] > 0
-            if can_capture:
+            # Capture logic for player
+            final_pit = (pit + seeds) % 14
+            if final_pit in player_side and board[final_pit] == 1 and board[12 - final_pit] > 0:
                 player_score += (board[12 - final_pit] + 1) * capture_weight
 
-        for pit in opponent_side:
-            seeds = board[pit]
-            opponent_score += seeds * pit_weight  # Optionally evaluate opponent seeds
-
-        # Extra turn logic for player
-        for pit in player_side:
-            if board[pit] == (player_kalaha_index - pit) % 14 or board[pit] == 14 + (player_kalaha_index - pit) % 14:
+            # Extra turn logic for player
+            if seeds == (player_kalaha_index - pit) % 14 or seeds == 14 + (player_kalaha_index - pit) % 14:
                 player_score += extra_turn_weight
 
-        # Subtract opponent potential score from player's perspective
-        return player_score - opponent_score
+        # Opponent capture and extra turn logic
+        for pit in opponent_side:
+            seeds = board[pit]
+            final_pit_opponent = (pit + seeds) % 14
+            if final_pit_opponent in opponent_side and board[final_pit_opponent] == 1 and board[12 - final_pit_opponent] > 0:
+                opponent_score -= (board[12 - final_pit_opponent] + 1) * capture_weight  # Reflect potential loss in player's score
+
+            # Opponent extra turn logic
+            if seeds == (opponent_kalaha_index - pit) % 14 or seeds == 14 + (opponent_kalaha_index - pit) % 14:
+                opponent_score -= extra_turn_weight  # Reflect potential loss in player's score
+
+        return player_score - opponent_score  # Reflect the difference in evaluation
 
     def calculate_final_pit_index(self, start_pit, seeds, player_turn):
         final_pit = start_pit
         while seeds > 0:
             final_pit += 1
             if final_pit == 14:
-                final_pit = 0
-            if player_turn == 1 and final_pit == 13:
-                continue
-            elif player_turn == 2 and final_pit == 6:
-                continue
+                final_pit = 0  # Loop back to the start
+            if (player_turn == 1 and final_pit == 13) or (player_turn == 2 and final_pit == 6):
+                continue  # Skip opponent's Kalaha
             seeds -= 1
         return final_pit
+
 

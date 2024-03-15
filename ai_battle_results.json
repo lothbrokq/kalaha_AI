@@ -1,0 +1,162 @@
+[
+    {
+        "game": 1,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 1,
+            "pit_weight": 6,
+            "extra_turn_weight": 7,
+            "capture_weight": 9
+        }
+    },
+    {
+        "game": 2,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 3,
+            "pit_weight": 6,
+            "extra_turn_weight": 6,
+            "capture_weight": 8
+        }
+    },
+    {
+        "game": 3,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 6,
+            "pit_weight": 6,
+            "extra_turn_weight": 6,
+            "capture_weight": 3
+        }
+    },
+    {
+        "game": 4,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 3,
+            "pit_weight": 3,
+            "extra_turn_weight": 2,
+            "capture_weight": 7
+        }
+    },
+    {
+        "game": 5,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 3,
+            "pit_weight": 3,
+            "extra_turn_weight": 8,
+            "capture_weight": 5
+        }
+    },
+    {
+        "game": 6,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 1,
+            "pit_weight": 7,
+            "extra_turn_weight": 0,
+            "capture_weight": 5
+        }
+    },
+    {
+        "game": 7,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 6,
+            "pit_weight": 1,
+            "extra_turn_weight": 8,
+            "capture_weight": 5
+        }
+    },
+    {
+        "game": 8,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 1,
+            "pit_weight": 2,
+            "extra_turn_weight": 1,
+            "capture_weight": 6
+        }
+    },
+    {
+        "game": 9,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 9,
+            "pit_weight": 4,
+            "extra_turn_weight": 5,
+            "capture_weight": 6
+        }
+    },
+    {
+        "game": 10,
+        "winner": "AI1",
+        "config1": {
+            "kalaha_weight": 0,
+            "pit_weight": 3,
+            "extra_turn_weight": 4,
+            "capture_weight": 1
+        },
+        "config2": {
+            "kalaha_weight": 3,
+            "pit_weight": 8,
+            "extra_turn_weight": 5,
+            "capture_weight": 9
+        }
+    }
+]
