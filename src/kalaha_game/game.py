@@ -17,33 +17,24 @@ class KalahaGame:
 
         self.current_player = 1  # Player 1 starts
     
-    def get_winner_based_on_state(self, board):
-        # This method assumes that the game is over. It calculates which player has more stones in their Kalaha.
-        # Remember, this doesn't declare the winner based on game rules directly (e.g., emptying one side of the board)
-        # but rather who has more stones in their Mancala/Kalaha after the game ends.
+    def get_winner(self, board):
         if board[6] > board[13]:  # If Player 1 has more stones in their Kalaha
             return 1
         elif board[13] > board[6]:  # If Player 2 has more stones in their Kalaha
             return 2
         else:
-            return "Tie"  # A tie if both have the same number of stones
-    
-    # def print_board(self):
-    #     # Print the board state in a user-friendly way
-    #     print("P2:  ", self.board[13], " | ", *self.board[12:6:-1])
-    #     print("    ", end="")
-    #     print("       ", *self.board[:6], " | ", "P1:  ", self.board[6])
-    #     print("\n")
+            return "Tie"  
+  
 
     def print_board(self):
-        # Print the board state in a user-friendly way
+        # Print simple graphical representation of the board
         print("P2:  ", self.board[13], "  |  ", self.board[12], " ", self.board[11], " ", self.board[10], " ", self.board[9], " ", self.board[8], " ", self.board[7])
         print("    ", end="")
         print("         ", self.board[0], " ", self.board[1], " ", self.board[2], " ", self.board[3], " ", self.board[4], " ", self.board[5], "  |  ", "P1:  ", self.board[6])
         print("\n")
 
     def get_board(self):
-        return copy.deepcopy(self.board) # Return the current board states
+        return copy.deepcopy(self.board) 
 
     def get_current_player(self):
         return self.current_player
@@ -111,15 +102,7 @@ class KalahaGame:
             self.board[:6] = [0]*6
 
         print("Game over. Player 1: {} | Player 2: {}".format(self.board[6], self.board[13]))
-        winner = self.get_winner()
+        winner = self.get_winner(self.board)
         print(f"Winner: Player {winner}")
         self.print_board()
-
-    def get_winner(self):
-        if self.board[6] > self.board[13]:
-            return 1
-        elif self.board[13] > self.board[6]:
-            return 2
-        else:
-            return "Tie"
 
